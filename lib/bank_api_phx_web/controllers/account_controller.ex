@@ -19,8 +19,8 @@ defmodule BankApiPhxWeb.AccountController do
   end
 
   def index(conn, %{}) do
-    user = Guardian.Plug.current_resource(conn)
-    render(conn, "show.json", account: user)
+    account = Guardian.Plug.current_resource(conn)
+    render(conn, "show.json", account: account)
   end
 
   def withdrawal(conn, params) do
@@ -32,7 +32,7 @@ defmodule BankApiPhxWeb.AccountController do
   end
 
   def terminate(conn, %{}) do
-    account = Accounts.get_user!(2)
+    account = Guardian.Plug.current_resource(conn)
 
     with {:ok, %User{}} <- Accounts.delete_user(account) do
       render(conn, "terminate.json", message: %{
