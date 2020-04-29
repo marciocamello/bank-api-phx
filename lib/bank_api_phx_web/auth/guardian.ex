@@ -5,8 +5,8 @@ defmodule BankApiPhxWeb.Auth.Guardian do
   use Guardian, otp_app: :bank_api_phx
 
   alias BankApiPhxWeb.Repo
-  alias BankApiPhxWeb.Models.Users
-  alias BankApiPhxWeb.Schemas.User
+  alias BankApiPhx.Accounts
+  alias BankApiPhx.Accounts.User
 
   @doc """
     Callback implementation for Guardian.subject_for_token/2.
@@ -35,7 +35,7 @@ defmodule BankApiPhxWeb.Auth.Guardian do
   def resource_from_claims(claims) do
     id = claims["sub"]
 
-    case Users.get_user(id) do
+    case Accounts.get_user!(id) do
       nil ->
         {:error, :reason_for_error}
 
@@ -50,7 +50,7 @@ defmodule BankApiPhxWeb.Auth.Guardian do
     Create a new token and add to esponse
   """
   def authenticate(email, password) do
-    with {:ok, user} <- Users.get_by_email(email) do
+    with {:ok, user} <- Accounts.get_by_email(email) do
       case validate_password(password, user.password) do
         true ->
           create_token(user)
@@ -87,7 +87,7 @@ defmodule BankApiPhxWeb.Auth.Guardian do
         {:error, :not_found}
 
       {:ok, %{"id" => id}} ->
-        case Users.get_user(id) do
+        case Accounts.get_user!(id) do
           nil ->
             {:error, :not_found}
 
@@ -109,7 +109,7 @@ defmodule BankApiPhxWeb.Auth.Guardian do
   def terminate_account(token) do
     case get_user_by_token(token) do
       {:ok, _user} ->
-        {:ok, Users.delete_user(_user)}
+        {:ok, Accounts.delete_user(_user)}
 
       {:error, :not_found} ->
         {:error, :not_found}

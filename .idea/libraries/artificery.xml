@@ -2,6 +2,7 @@
   <library name="artificery" type="mix">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/_build/dev/lib/artificery/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/artificery/ebin" />
     </CLASSES>
     <SOURCES>
       <root url="file://$PROJECT_DIR$/deps/artificery/lib" />

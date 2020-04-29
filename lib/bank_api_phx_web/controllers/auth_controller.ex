@@ -1,12 +1,22 @@
 defmodule BankApiPhxWeb.AuthController do
   use BankApiPhxWeb, :controller
 
-  alias BankApiPhx.Accounts
-  alias BankApiPhx.Accounts.User
+  alias BankApiPhxWeb.Auth.Guardian
 
   action_fallback BankApiPhxWeb.FallbackController
 
   def login(conn, params) do
-    render(conn, "login.json", data: params)
+    %{"email" => email, "password" => password} = params
+
+    case Guardian.authenticate(email, password) do
+      {:ok, user, token} ->
+        render(conn, "login.json", message: "Login success!", user: user, token: token)
+
+      {:error, :unauthorized} ->
+        render(conn, "errors.json", errors: "Unauthorized")
+
+      {:error, :not_found} ->
+        render(conn, "errors.json", errors: "Invalid credentials")
+    end
   end
 end

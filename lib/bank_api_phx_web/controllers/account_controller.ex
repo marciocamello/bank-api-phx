@@ -3,6 +3,7 @@ defmodule BankApiPhxWeb.AccountController do
 
   alias BankApiPhx.Accounts
   alias BankApiPhx.Accounts.User
+  alias BankApiPhxWeb.Auth.Guardian
 
   action_fallback BankApiPhxWeb.FallbackController
 
@@ -18,8 +19,8 @@ defmodule BankApiPhxWeb.AccountController do
   end
 
   def index(conn, %{}) do
-    account = Accounts.get_user!(2)
-    render(conn, "show.json", account: account)
+    user = Guardian.Plug.current_resource(conn)
+    render(conn, "show.json", account: user)
   end
 
   def withdrawal(conn, params) do

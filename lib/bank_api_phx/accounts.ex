@@ -94,6 +94,30 @@ defmodule BankApiPhx.Accounts do
   end
 
   @doc """
+    Get user from email
+
+  # Examples
+      iex> alias BankApi.Models.Users
+      iex> Users.get_by_email(
+        "email@email.com"
+      )
+      { :ok, %BankApi.Schemas.User{} }
+  """
+  def get_by_email(email) do
+    case Repo.get_by(User, email: email) do
+      nil ->
+        {:error, :not_found}
+
+      user ->
+        user =
+          user
+          |> Repo.preload(accounts: [:user])
+
+        {:ok, user}
+    end
+  end
+
+  @doc """
   Deletes a user.
 
   ## Examples

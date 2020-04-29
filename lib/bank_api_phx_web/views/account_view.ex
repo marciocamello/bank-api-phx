@@ -27,4 +27,8 @@ defmodule BankApiPhxWeb.AccountView do
       accounts: account.accounts,
     }
   end
+
+  def render("errors.json", %{errors: errors}) do
+    %{errors: errors}
+  end
 end

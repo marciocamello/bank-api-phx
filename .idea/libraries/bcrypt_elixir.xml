@@ -2,6 +2,7 @@
   <library name="bcrypt_elixir" type="mix">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/_build/dev/lib/bcrypt_elixir/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/bcrypt_elixir/ebin" />
     </CLASSES>
     <SOURCES>
       <root url="file://$PROJECT_DIR$/deps/bcrypt_elixir/lib" />
