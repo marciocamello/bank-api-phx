@@ -11,7 +11,7 @@ services:
       bash -c "mix deps.get --force
       && mix ecto.setup
       && mix utils.seed
-      && iex -S mix run --no-halt
+      && iex -S mix phx.server
       "
     tty: true
     privileged: false

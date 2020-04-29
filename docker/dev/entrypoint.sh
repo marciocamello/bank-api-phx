@@ -6,4 +6,4 @@ name=${str:0:10}
 mix ecto.create
 mix ecto.migrate
 
-iex -S mix run --no-halt
+iex -S mix phx.server
