@@ -4,6 +4,7 @@ defmodule BankApiPhxWeb.AccountController do
   alias BankApiPhx.Accounts
   alias BankApiPhx.Accounts.User
   alias BankApiPhxWeb.Auth.Guardian
+  alias BankApiPhx.Operations
 
   action_fallback BankApiPhxWeb.FallbackController
 
@@ -24,20 +25,108 @@ defmodule BankApiPhxWeb.AccountController do
   end
 
   def withdrawal(conn, params) do
-    render(conn, "withdrawal.json", data: params)
+    case Guardian.Plug.current_resource(conn) do
+      account ->
+        params =
+          params
+          |> Map.put("user", account)
+
+        case Operations.withdrawal(params) do
+          {:error, :zero_value} ->
+            render(conn, "errors.json", errors: "Value cannot be less than 0.00")
+
+          {:error, :unauthorized} ->
+            render(conn, "errors.json", errors: "Invalid credentials")
+
+          {:error, :not_funds} ->
+            render(conn, "errors.json", errors: "You don't have enough funds")
+
+          {:info, _account} ->
+            render(
+              conn,
+              "withdrawal.json",
+              data: %{
+                message: "Please check your transaction",
+                result: _account
+              }
+            )
+
+          {:ok, _result} ->
+            render(
+              conn,
+              "withdrawal.json",
+              data: %{
+                message: "Successful withdrawal!",
+                result: %{
+                  "email" => _result.user.email,
+                  "new_balance" => _result.balance
+                }
+              }
+            )
+        end
+
+      {:error, _reason} ->
+        render(conn, "errors.json", errors: "Unauthorized")
+    end
   end
 
   def transfer(conn, params) do
-    render(conn, "transfer.json", data: params)
+    case Guardian.Plug.current_resource(conn) do
+      account ->
+        params =
+          params
+          |> Map.put("user", account)
+
+        case Operations.transfer(params) do
+          {:error, :zero_value} ->
+            render(conn, "errors.json", errors: "Value cannot be less than 0.00")
+
+          {:error, :unauthorized} ->
+            render(conn, "errors.json", errors: "Invalid credentials")
+
+          {:error, :not_funds} ->
+            render(conn, "errors.json", errors: "You don't have enough funds")
+
+          {:info, _account} ->
+            render(
+              conn,
+              "transfer.json",
+              data: %{
+                message: "Please check your transaction",
+                result: _account
+              }
+            )
+
+          {:ok, _result} ->
+            render(
+              conn,
+              "transfer.json",
+              data: %{
+                message: "Successful withdrawal!",
+                result: %{
+                  "email" => _result.user.email,
+                  "new_balance" => _result.balance
+                }
+              }
+            )
+        end
+
+      {:error, _reason} ->
+        render(conn, "errors.json", errors: "Unauthorized")
+    end
   end
 
   def terminate(conn, %{}) do
     account = Guardian.Plug.current_resource(conn)
 
     with {:ok, %User{}} <- Accounts.delete_user(account) do
-      render(conn, "terminate.json", message: %{
-        "message" => "You accounts has been finished"
-      })
+      render(
+        conn,
+        "terminate.json",
+        message: %{
+          "message" => "You accounts has been finished"
+        }
+      )
     end
   end
 end

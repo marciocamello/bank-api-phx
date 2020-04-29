@@ -119,9 +119,7 @@ defmodule BankApiPhxWeb.Auth.Guardian do
   @doc """
     Check if user is admin account
   """
-  def is_admin(token) do
-    {:ok, claims} = decode_and_verify(token)
-    %{"acl" => acl} = claims
+  def is_admin(acl) do
 
     case acl do
       "admin" ->

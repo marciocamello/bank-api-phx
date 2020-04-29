@@ -37,15 +37,19 @@ defmodule BankApiPhxWeb.Router do
      post "/auth/login", AuthController, :login
   end
 
-  # Other scopes may use custom stacks.
   scope "/api", BankApiPhxWeb do
     pipe_through [:api, :auth, :ensure_auth]
 
-    resources "/users", UserController
     get "/account/index", AccountController, :index
     post "/account/withdrawal", AccountController, :withdrawal
     post "/account/transfer", AccountController, :transfer
     get "/account/terminate", AccountController, :terminate
+  end
+
+  scope "/api", BankApiPhxWeb do
+    pipe_through [:api, :auth, :ensure_auth]
+
+    resources "/users", UserController
     post "/transactions/report", TransactionController, :report
   end
 end

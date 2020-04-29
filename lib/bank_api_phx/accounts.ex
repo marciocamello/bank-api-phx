@@ -230,15 +230,100 @@ defmodule BankApiPhx.Accounts do
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking account changes.
+    Get user from email
 
-  ## Examples
-
-      iex> change_account(account)
-      %Ecto.Changeset{source: %Account{}}
-
+  # Examples
+      iex> alias BankApi.Models.Users
+      iex> Users.get_by_email(
+        "email@email.com"
+      )
+      { :ok, %BankApi.Schemas.User{} }
   """
-  def change_account(%Account{} = account) do
-    Account.changeset(account, %{})
+  def get_by_email(email) do
+    case Repo.get_by(User, email: email) do
+      nil ->
+        {:error, :not_found}
+
+      user ->
+        user =
+          user
+          |> Repo.preload(accounts: [:user])
+
+        {:ok, user}
+    end
+  end
+
+
+  @doc """
+    Update current account balance
+
+  # Examples
+      iex> alias BankApi.Models.Accounts
+  """
+  def update_balance(%Account{} = account, attrs, apply \\ false) do
+    case apply do
+      true ->
+        account
+        |> Account.changeset(attrs)
+        |> Repo.update()
+
+      false ->
+        account =
+          account
+          |> Account.changeset(attrs)
+
+        {
+          :info,
+          %{
+            email: account.data.user.email,
+            old_balance: account.data.balance,
+            new_balance: account.changes.balance
+          }
+        }
+    end
+  end
+
+  @doc """
+    Update transfer operation to user account
+
+  # Examples
+      iex> alias BankApi.Models.Accounts
+  """
+  def update_balance(%Account{} = from, %Account{} = to, from_attrs, to_attrs, apply \\ false) do
+    case apply do
+      true ->
+        from
+        |> Account.changeset(from_attrs)
+        |> Repo.update()
+
+        to
+        |> Account.changeset(to_attrs)
+        |> Repo.update()
+
+      false ->
+        from =
+          from
+          |> Account.changeset(from_attrs)
+
+        to =
+          to
+          |> Account.changeset(to_attrs)
+
+        {
+          :info,
+          %{
+            from: %{
+              email: from.data.user.email,
+              old_balance: from.data.balance,
+              new_balance: from.changes.balance
+            },
+            to: %{
+              email: to.data.user.email,
+              old_balance: to.data.balance,
+              new_balance: to.changes.balance
+            }
+          }
+        }
+    end
   end
 end
