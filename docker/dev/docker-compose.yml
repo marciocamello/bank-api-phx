@@ -1,0 +1,70 @@
+version: "2"
+services:
+  #APP
+  app:
+    container_name: bank-api
+    hostname: bank-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      bash -c "mix deps.get --force
+      && mix ecto.setup
+      && mix utils.seed
+      && iex -S mix run --no-halt
+      "
+    tty: true
+    privileged: false
+    environment:
+      MIX_ENV: dev
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_DATABASE: "bank_api_repo"
+      DB_HOSTNAME: "bank-db"
+    volumes:
+      - ../..:/app
+    ports:
+      - "4000:4000"
+    networks:
+      - bank-network
+    depends_on:
+      - postgres
+
+  # POSTGRES DATABASE
+  postgres:
+    container_name: bank-db
+    hostname: bank-db
+    image: postgres
+    restart: always
+    volumes:
+      - "bank_data:/var/lib/postgres"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - bank-network
+
+  # PGADMIN
+  pgadmin:
+    container_name: bank-db-admin
+    hostname: bank-db-admin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "mac3designer@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "123123123"
+    ports:
+      - "6543:80"
+    depends_on:
+      - postgres
+    networks:
+      - bank-network
+
+networks:
+  bank-network:
+    driver: bridge
+
+volumes:
+  bank_data:
+    external: true
